@@ -58,8 +58,8 @@ This document enumerates the real, production-grade tools selected for each comp
 | Core Platform | 7 | PostgreSQL, Kafka, Kubernetes, PostgREST, Hasura, Camunda, Airflow |
 | CDISC & Clinical | 6 | Pinnacle 21, SAS, R, ODM Study Designer, PhUSE Define-XML Tools, admiral |
 | Integration & Data Quality | 4 | Medidata Rave, Argus Safety, Apache NiFi, Redis |
-| Infrastructure & Security | 5 | Vault, Keycloak, OpenTelemetry, Grafana, Terraform, Velero |
-| **Total** | **22** | |
+| Infrastructure & Security | 6 | Vault, Keycloak, OpenTelemetry, Grafana, Terraform, Velero |
+| **Total** | **23** | |
 
 ---
 
