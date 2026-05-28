@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/protocol.json",
+  "title": "Protocol",
+  "description": "The study protocol document and its metadata. Metadata entity (no direct SDTM domain).",
+  "type": "object",
+  "required": [
+    "protocol_id",
+    "study_id",
+    "protocol_number",
+    "version",
+    "title",
+    "status",
+    "effective_date",
+    "inclusion_criteria",
+    "exclusion_criteria",
+    "primary_endpoints"
+  ],
+  "properties": {
+    "protocol_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique protocol identifier (PK)"
+    },
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Study this protocol belongs to (FK → Study, UNIQUE)"
+    },
+    "protocol_number": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Protocol number"
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Protocol version"
+    },
+    "amendment_number": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Amendment sequence number"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Protocol title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "APPROVED", "AMENDED", "SUPERSEDED"],
+      "description": "Protocol status"
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date protocol became effective"
+    },
+    "summary": {
+      "type": ["string", "null"],
+      "maxLength": 2000,
+      "description": "Protocol summary"
+    },
+    "inclusion_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "List of inclusion criteria"
+    },
+    "exclusion_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "List of exclusion criteria"
+    },
+    "primary_endpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "Primary study endpoints"
+    },
+    "secondary_endpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Secondary study endpoints"
+    },
+    "file_url": {
+      "type": ["string", "null"],
+      "maxLength": 500,
+      "format": "uri",
+      "description": "Link to full protocol document"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp"
+    }
+  },
+  "additionalProperties": false
+}
