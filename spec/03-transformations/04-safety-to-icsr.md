@@ -14,10 +14,10 @@
 | Source Field | Target Field | Type Conversion | Rule |
 |-------------|-------------|----------------|------|
 | AdverseEvent.ae_id | icsr.case_id | UUID → string | ICSR format |
-| AdverseEvent.subject_id | icsr.patient.id | UUID → string | SHARED-001 |
-| Subject.sex | icsr.patient.sex | Enum → ICH code | M/F/U |
-| Subject.age | icsr.patient.age | int | direct copy |
-| Subject.birth_date | icsr.patient.dob | Date → string | ISO 8601 |
+| AdverseEvent.subject_id | icsr.subject.id | UUID → string | SHARED-001 |
+| Subject.sex | icsr.subject.sex | Enum → ICH code | M/F/U |
+| Subject.age | icsr.subject.age | int | direct copy |
+| Subject.birth_date | icsr.subject.dob | Date → string | ISO 8601 |
 | AdverseEvent.term | icsr.reaction[].event_text | none | direct copy |
 | AdverseEvent.meddra_code | icsr.reaction[].event_code | none | MedDRA PT code |
 | AdverseEvent.onset_date | icsr.reaction[].event_onset | Date → string | ISO 8601 |
