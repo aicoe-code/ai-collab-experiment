@@ -226,4 +226,4 @@ Phase 1 ──▶ Phase 2 ──▶ Phase 3 ──▶ Phase 4
 - Integrations: [Module 04: Integrations](../04-integrations/api-contracts.md)
 - Trial Designs: [Module 05: Trial Designs](../05-trial-designs/parallel-group.md)
 - Risk Models: [Module 06: Risk Models](../06-risk-models/enrollment-risk.md)
-- Compliance: [Module 07: Compliance](../07-compliance/21-cfr-part-11.md)
+- Compliance: [Module 07: Compliance](../07-compliance/21-cfr-part11.md)
