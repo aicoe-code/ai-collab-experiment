@@ -6,10 +6,23 @@ Each artifact set is scored independently. The full SDLC PASSES when ALL artifac
 
 ## Artifact 01: Business Requirements (01-business-requirements/)
 
+Every BR MUST follow the template in BR_TEMPLATE.md. No one-liners.
+
 | ID | Criterion | Verification |
 |----|-----------|-------------|
-| 01-A | stakeholder-needs.md identifies ≥5 stakeholder groups with needs | Named groups (Sponsor, CRO, Site, Regulator, Patient) |
-| 01-B | business-requirements.md has ≥20 numbered requirements (BR-001..) | Each has ID, description, priority, source stakeholder |
+| 01-A | stakeholder-needs.md identifies ≥5 stakeholder groups with needs | Named groups (Sponsor, CRO, Site, Regulator, Patient), each with ≥3 needs |
+| 01-B | business-requirements.md has ≥20 numbered requirements (BR-001..) | Each BR uses the full template from BR_TEMPLATE.md |
+| 01-B1 | Each BR has Overview table (ID, title, priority, category, source need, regulatory basis) | Structured table |
+| 01-B2 | Each BR has Business Rationale (WHY, 3-5 sentences, quantified impact where possible) | Not a one-liner |
+| 01-B3 | Each BR has Detailed Description (WHAT, 5-10 sentences, trigger/behavior/output) | Specific, non-technical language |
+| 01-B4 | Each BR has Preconditions (checklist) | ≥2 preconditions per BR |
+| 01-B5 | Each BR has ≥3 Acceptance Criteria in Given/When/Then format | Table with AC IDs |
+| 01-B6 | Each BR has Dependencies (other BRs, relationship type) | Table format |
+| 01-B7 | Each BR has Impacted Systems (system, impact type, description) | Table format |
+| 01-B8 | Each BR has Data Entities Involved (entity, operation: CRUD) | Table format |
+| 01-B9 | Each BR has Edge Cases and Exceptions (≥2 per BR) | Table format |
+| 01-B10 | Each BR has Risks if Not Implemented (risk, likelihood, impact, mitigation) | Table format |
+| 01-B11 | Each BR has Assumptions (≥1 per BR) | List format |
 | 01-C | use-cases.md has ≥10 use cases | Each has actor, preconditions, main flow, postconditions, alternative flows |
 | 01-D | glossary.md has ≥30 domain terms | Terms used consistently across all artifacts |
 | 01-E | Every BR traces to ≥1 stakeholder need | Cross-reference check |
