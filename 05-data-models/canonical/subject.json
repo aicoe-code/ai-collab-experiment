@@ -4,82 +4,73 @@
   "title": "Subject",
   "description": "A participant enrolled in a clinical trial. Maps to SDTM domain DM (Demographics).",
   "type": "object",
-  "required": ["subject_id", "study_id", "site_id", "status"],
+  "required": ["subject_id", "study_id", "site_id", "subject_number"],
   "properties": {
     "subject_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Unique identifier for the subject."
+      "description": "Unique subject identifier."
     },
     "study_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Foreign key to the Study entity."
+      "description": "Reference to parent Study."
     },
     "site_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Foreign key to the Site where the subject is enrolled."
+      "description": "Enrolling site identifier."
     },
     "subject_number": {
       "type": "string",
+      "minLength": 1,
       "maxLength": 20,
-      "description": "Site-specific subject identification number. CDISC DM variable: SUBJID."
-    },
-    "screening_number": {
-      "type": "string",
-      "maxLength": 20,
-      "description": "Screening identification number."
+      "description": "Subject number within study."
     },
     "status": {
       "type": "string",
-      "enum": ["SCREENING", "ENROLLED", "RANDOMIZED", "ON_TREATMENT", "COMPLETED", "WITHDRAWN", "SCREEN_FAILED"],
-      "description": "Current subject enrollment status."
+      "enum": ["screening", "screened", "enrolled", "randomized", "on_treatment", "completed", "discontinued", "screen_failed", "withdrawn"],
+      "description": "Current subject status."
+    },
+    "screening_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of screening visit."
     },
     "enrollment_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of informed consent. CDISC DM variable: RFICDTC."
+      "description": "Date of formal enrollment."
     },
     "date_of_birth": {
       "type": "string",
       "format": "date",
-      "description": "Subject date of birth. CDISC DM variable: BRTHDTC."
+      "description": "Subject date of birth."
     },
     "sex": {
       "type": "string",
-      "enum": ["M", "F", "U"],
-      "description": "Biological sex. CDISC DM variable: SEX. Controlled terminology: CDISC CT."
-    },
-    "race": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "Subject race. CDISC DM variable: RACE. Controlled terminology: CDISC CT."
+      "pattern": "^(M|F|U)$",
+      "description": "Biological sex (M/F/U)."
     },
     "ethnicity": {
       "type": "string",
       "maxLength": 100,
-      "description": "Subject ethnicity. CDISC DM variable: ETHNIC."
+      "description": "Ethnicity."
     },
-    "treatment_arm": {
+    "race": {
       "type": "string",
-      "maxLength": 50,
-      "description": "Assigned treatment arm. CDISC DM variable: ARMCD."
+      "maxLength": 100,
+      "description": "Race."
     },
-    "randomization_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date of randomization."
-    },
-    "withdrawal_date": {
+    "consent_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of withdrawal from study, if applicable."
+      "description": "Date informed consent was signed."
     },
-    "withdrawal_reason": {
+    "discontinuation_reason": {
       "type": "string",
-      "maxLength": 200,
-      "description": "Reason for withdrawal."
+      "maxLength": 500,
+      "description": "Reason for discontinuation."
     },
     "created_at": {
       "type": "string",
@@ -89,7 +80,7 @@
     "updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Record last update timestamp."
+      "description": "Last update timestamp."
     }
   }
 }
