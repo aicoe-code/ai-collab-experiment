@@ -1,0 +1,494 @@
+asyncapi: 3.0.0
+info:
+  title: CDOS Event Bus
+  description: Clinical Development Operating System — Event-driven integration layer
+  version: 1.0.0
+
+servers:
+  production:
+    host: kafka.cdos.io:9092
+    protocol: kafka
+    description: Production Kafka cluster
+
+channels:
+  subject.enrolled:
+    address: subject.enrolled
+    messages:
+      SubjectEnrolled:
+        $ref: '#/components/messages/SubjectEnrolled'
+    description: Emitted when a subject is enrolled in a study
+
+  subject.screened:
+    address: subject.screened
+    messages:
+      SubjectScreened:
+        $ref: '#/components/messages/SubjectScreened'
+    description: Emitted when a subject completes screening
+
+  subject.withdrawn:
+    address: subject.withdrawn
+    messages:
+      SubjectWithdrawn:
+        $ref: '#/components/messages/SubjectWithdrawn'
+    description: Emitted when a subject withdraws from a study
+
+  ae.reported:
+    address: ae.reported
+    messages:
+      AeReported:
+        $ref: '#/components/messages/AeReported'
+    description: Emitted when an adverse event is reported
+
+  ae.susar:
+    address: ae.susar
+    messages:
+      AeSusar:
+        $ref: '#/components/messages/AeSusar'
+    description: Emitted when a SUSAR (Suspected Unexpected Serious Adverse Reaction) is detected
+
+  lab.result_received:
+    address: lab.result_received
+    messages:
+      LabResultReceived:
+        $ref: '#/components/messages/LabResultReceived'
+    description: Emitted when a lab result is received from LIMS
+
+  dose.administered:
+    address: dose.administered
+    messages:
+      DoseAdministered:
+        $ref: '#/components/messages/DoseAdministered'
+    description: Emitted when a dose of study drug is administered
+
+  query.raised:
+    address: query.raised
+    messages:
+      QueryRaised:
+        $ref: '#/components/messages/QueryRaised'
+    description: Emitted when a data clarification query is raised
+
+  query.resolved:
+    address: query.resolved
+    messages:
+      QueryResolved:
+        $ref: '#/components/messages/QueryResolved'
+    description: Emitted when a query is resolved
+
+  study.status_changed:
+    address: study.status_changed
+    messages:
+      StudyStatusChanged:
+        $ref: '#/components/messages/StudyStatusChanged'
+    description: Emitted when a study's status changes
+
+  site.activated:
+    address: site.activated
+    messages:
+      SiteActivated:
+        $ref: '#/components/messages/SiteActivated'
+    description: Emitted when a site is activated for a study
+
+  subject.randomized:
+    address: subject.randomized
+    messages:
+      SubjectRandomized:
+        $ref: '#/components/messages/SubjectRandomized'
+    description: Emitted when a subject is randomized via IWRS
+
+operations:
+  onSubjectEnrolled:
+    action: receive
+    channel:
+      $ref: '#/channels/subject.enrolled'
+    summary: Process subject enrollment event
+    description: CTMS and IWRS consume this to update enrollment tracking and trigger randomization
+
+  onAeReported:
+    action: receive
+    channel:
+      $ref: '#/channels/ae.reported'
+    summary: Process adverse event report
+    description: Safety system consumes this to initiate ICSR workflow
+
+  onLabResultReceived:
+    action: receive
+    channel:
+      $ref: '#/channels/lab.result_received'
+    summary: Process lab result
+    description: Data quality engine consumes this for normal range checks and CDISC mapping
+
+  onQueryRaised:
+    action: receive
+    channel:
+      $ref: '#/channels/query.raised'
+    summary: Process query raised
+    description: EDC consumes this to display the query to the site
+
+components:
+  messages:
+    SubjectEnrolled:
+      name: SubjectEnrolled
+      title: Subject Enrolled
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SubjectEnrolledEvent'
+      headers:
+        type: object
+        properties:
+          correlation_id:
+            type: string
+            format: uuid
+          timestamp:
+            type: string
+            format: date-time
+
+    SubjectScreened:
+      name: SubjectScreened
+      title: Subject Screened
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SubjectScreenedEvent'
+
+    SubjectWithdrawn:
+      name: SubjectWithdrawn
+      title: Subject Withdrawn
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SubjectWithdrawnEvent'
+
+    AeReported:
+      name: AeReported
+      title: Adverse Event Reported
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AeReportedEvent'
+
+    AeSusar:
+      name: AeSusar
+      title: SUSAR Detected
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AeSusarEvent'
+
+    LabResultReceived:
+      name: LabResultReceived
+      title: Lab Result Received
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/LabResultReceivedEvent'
+
+    DoseAdministered:
+      name: DoseAdministered
+      title: Dose Administered
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/DoseAdministeredEvent'
+
+    QueryRaised:
+      name: QueryRaised
+      title: Query Raised
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/QueryRaisedEvent'
+
+    QueryResolved:
+      name: QueryResolved
+      title: Query Resolved
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/QueryResolvedEvent'
+
+    StudyStatusChanged:
+      name: StudyStatusChanged
+      title: Study Status Changed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/StudyStatusChangedEvent'
+
+    SiteActivated:
+      name: SiteActivated
+      title: Site Activated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SiteActivatedEvent'
+
+    SubjectRandomized:
+      name: SubjectRandomized
+      title: Subject Randomized
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SubjectRandomizedEvent'
+
+  schemas:
+    BaseEvent:
+      type: object
+      required: [event_id, event_type, timestamp, source]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        source:
+          type: string
+          description: Source system (e.g., EDC, CTMS, LIMS)
+        correlation_id:
+          type: string
+          format: uuid
+
+    SubjectEnrolledEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [subject_id, study_id, site_id]
+          properties:
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            site_id:
+              type: string
+              format: uuid
+            enrollment_date:
+              type: string
+              format: date
+
+    SubjectScreenedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [subject_id, study_id, screen_result]
+          properties:
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            screen_result:
+              type: string
+              enum: [PASS, FAIL]
+            screen_failure_reason:
+              type: string
+
+    SubjectWithdrawnEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [subject_id, study_id, withdrawal_reason]
+          properties:
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            withdrawal_reason:
+              type: string
+            withdrawal_date:
+              type: string
+              format: date
+
+    AeReportedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [ae_id, subject_id, study_id, term, severity]
+          properties:
+            ae_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            term:
+              type: string
+            meddra_code:
+              type: string
+            severity:
+              type: string
+              enum: [MILD, MODERATE, SEVERE]
+            serious:
+              type: boolean
+            onset_date:
+              type: string
+              format: date
+
+    AeSusarEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [ae_id, subject_id, study_id, term, reporting_deadline]
+          properties:
+            ae_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            term:
+              type: string
+            reporting_deadline:
+              type: string
+              format: date-time
+            expedited:
+              type: boolean
+
+    LabResultReceivedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [lab_result_id, subject_id, study_id, test_name, value]
+          properties:
+            lab_result_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            visit_id:
+              type: string
+              format: uuid
+            test_name:
+              type: string
+            value:
+              type: number
+            unit:
+              type: string
+            normal_flag:
+              type: string
+              enum: [NORMAL, LOW, HIGH, ABNORMAL]
+
+    DoseAdministeredEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [dose_id, subject_id, study_id, drug_name, dose_amount]
+          properties:
+            dose_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            drug_name:
+              type: string
+            dose_amount:
+              type: string
+            dose_unit:
+              type: string
+            administered_at:
+              type: string
+              format: date-time
+
+    QueryRaisedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [query_id, subject_id, study_id, question]
+          properties:
+            query_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            crf_page:
+              type: string
+            question:
+              type: string
+            raised_by:
+              type: string
+
+    QueryResolvedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [query_id, subject_id, study_id, answer]
+          properties:
+            query_id:
+              type: string
+              format: uuid
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            answer:
+              type: string
+            resolved_by:
+              type: string
+
+    StudyStatusChangedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [study_id, old_status, new_status]
+          properties:
+            study_id:
+              type: string
+              format: uuid
+            old_status:
+              type: string
+            new_status:
+              type: string
+            reason:
+              type: string
+
+    SiteActivatedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [site_id, study_id, site_number]
+          properties:
+            site_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            site_number:
+              type: string
+            activated_date:
+              type: string
+              format: date
+
+    SubjectRandomizedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [subject_id, study_id, treatment_arm]
+          properties:
+            subject_id:
+              type: string
+              format: uuid
+            study_id:
+              type: string
+              format: uuid
+            treatment_arm:
+              type: string
+            randomization_number:
+              type: string
+            stratification_factors:
+              type: object

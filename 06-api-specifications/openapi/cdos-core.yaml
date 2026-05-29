@@ -1,0 +1,837 @@
+openapi: 3.1.0
+info:
+  title: CDOS Core API
+  description: Clinical Development Operating System — REST API for managing clinical trial data
+  version: 1.0.0
+  contact:
+    name: CDOS Team
+    email: cdos@example.com
+
+servers:
+  - url: https://api.cdos.io/v1
+    description: Production
+  - url: https://api.staging.cdos.io/v1
+    description: Staging
+
+security:
+  - oauth2: [read, write]
+
+paths:
+  /studies:
+    get:
+      operationId: listStudies
+      summary: List all studies
+      tags: [Studies]
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/StudyStatus'
+      responses:
+        '200':
+          description: Paginated list of studies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Study'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createStudy
+      summary: Create a new study
+      tags: [Studies]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyCreate'
+      responses:
+        '201':
+          description: Study created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /studies/{study_id}:
+    get:
+      operationId: getStudy
+      summary: Get a study by ID
+      tags: [Studies]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      responses:
+        '200':
+          description: Study details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateStudy
+      summary: Update a study
+      tags: [Studies]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyUpdate'
+      responses:
+        '200':
+          description: Study updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{study_id}/subjects:
+    get:
+      operationId: listSubjects
+      summary: List subjects in a study
+      tags: [Subjects]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/SubjectStatus'
+      responses:
+        '200':
+          description: Paginated list of subjects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subject'
+                  total:
+                    type: integer
+    post:
+      operationId: createSubject
+      summary: Enroll a new subject
+      tags: [Subjects]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreate'
+      responses:
+        '201':
+          description: Subject enrolled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+
+  /studies/{study_id}/subjects/{subject_id}:
+    get:
+      operationId: getSubject
+      summary: Get subject details
+      tags: [Subjects]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/SubjectIdParam'
+      responses:
+        '200':
+          description: Subject details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{study_id}/sites:
+    get:
+      operationId: listSites
+      summary: List sites in a study
+      tags: [Sites]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: List of sites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Site'
+    post:
+      operationId: createSite
+      summary: Add a site to a study
+      tags: [Sites]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteCreate'
+      responses:
+        '201':
+          description: Site added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+
+  /studies/{study_id}/adverse-events:
+    get:
+      operationId: listAdverseEvents
+      summary: List adverse events in a study
+      tags: [Safety]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [MILD, MODERATE, SEVERE]
+        - name: serious
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of adverse events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdverseEvent'
+                  total:
+                    type: integer
+    post:
+      operationId: reportAdverseEvent
+      summary: Report an adverse event
+      tags: [Safety]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdverseEventCreate'
+      responses:
+        '201':
+          description: AE reported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdverseEvent'
+
+  /studies/{study_id}/lab-results:
+    get:
+      operationId: listLabResults
+      summary: List lab results in a study
+      tags: [Labs]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - name: subject_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: visit_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of lab results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabResult'
+
+  /studies/{study_id}/lab-results/{lab_result_id}:
+    get:
+      operationId: getLabResult
+      summary: Get a specific lab result
+      tags: [Labs]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - name: lab_result_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lab result details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabResult'
+
+  /studies/{study_id}/medications:
+    get:
+      operationId: listMedications
+      summary: List medications in a study
+      tags: [Medications]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: List of medications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Medication'
+    post:
+      operationId: recordMedication
+      summary: Record a medication
+      tags: [Medications]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationCreate'
+      responses:
+        '201':
+          description: Medication recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medication'
+
+  /studies/{study_id}/queries:
+    get:
+      operationId: listQueries
+      summary: List queries in a study
+      tags: [Queries]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, ANSWERED, CLOSED, CANCELLED]
+      responses:
+        '200':
+          description: List of queries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Query'
+
+  /studies/{study_id}/visits:
+    get:
+      operationId: listVisits
+      summary: List visits in a study
+      tags: [Visits]
+      parameters:
+        - $ref: '#/components/parameters/StudyIdParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: List of visits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Visit'
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.cdos.io/oauth2/token
+          scopes:
+            read: Read access
+            write: Write access
+
+  parameters:
+    StudyIdParam:
+      name: study_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SubjectIdParam:
+      name: subject_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  schemas:
+    StudyStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, ENROLLING, SUSPENDED, COMPLETED, TERMINATED]
+    SubjectStatus:
+      type: string
+      enum: [SCREENING, ENROLLED, ON_TREATMENT, FOLLOW_UP, COMPLETED, WITHDRAWN, FAILED_SCREENING]
+    Study:
+      type: object
+      required: [study_id, protocol_number, title, status]
+      properties:
+        study_id:
+          type: string
+          format: uuid
+        protocol_number:
+          type: string
+          example: "CDOS-2026-001"
+        title:
+          type: string
+        phase:
+          type: string
+          enum: [PHASE_1, PHASE_2, PHASE_3, PHASE_4]
+        status:
+          $ref: '#/components/schemas/StudyStatus'
+        therapeutic_area:
+          type: string
+        sponsor_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    StudyCreate:
+      type: object
+      required: [protocol_number, title, phase]
+      properties:
+        protocol_number:
+          type: string
+        title:
+          type: string
+        phase:
+          type: string
+          enum: [PHASE_1, PHASE_2, PHASE_3, PHASE_4]
+        therapeutic_area:
+          type: string
+    StudyUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          $ref: '#/components/schemas/StudyStatus'
+        therapeutic_area:
+          type: string
+    Subject:
+      type: object
+      required: [subject_id, study_id, site_id, status]
+      properties:
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        site_id:
+          type: string
+          format: uuid
+        subject_number:
+          type: string
+        status:
+          $ref: '#/components/schemas/SubjectStatus'
+        enrollment_date:
+          type: string
+          format: date
+        demographics:
+          type: object
+          properties:
+            age:
+              type: integer
+            sex:
+              type: string
+              enum: [M, F, U]
+            race:
+              type: string
+            ethnicity:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+    SubjectCreate:
+      type: object
+      required: [site_id]
+      properties:
+        site_id:
+          type: string
+          format: uuid
+        subject_number:
+          type: string
+        demographics:
+          type: object
+    Site:
+      type: object
+      required: [site_id, study_id, site_number, status]
+      properties:
+        site_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        site_number:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, SUSPENDED, CLOSED]
+        investigator_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    SiteCreate:
+      type: object
+      required: [site_number, name, country]
+      properties:
+        site_number:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        investigator_id:
+          type: string
+          format: uuid
+    AdverseEvent:
+      type: object
+      required: [ae_id, subject_id, study_id, term, severity]
+      properties:
+        ae_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        term:
+          type: string
+        meddra_code:
+          type: string
+        severity:
+          type: string
+          enum: [MILD, MODERATE, SEVERE]
+        serious:
+          type: boolean
+        onset_date:
+          type: string
+          format: date
+        resolution_date:
+          type: string
+          format: date
+        causality:
+          type: string
+          enum: [RELATED, NOT_RELATED, POSSIBLE, PROBABLE]
+        outcome:
+          type: string
+          enum: [RECOVERED, RECOVERING, NOT_RECOVERED, FATAL, UNKNOWN]
+        created_at:
+          type: string
+          format: date-time
+    AdverseEventCreate:
+      type: object
+      required: [subject_id, term, severity]
+      properties:
+        subject_id:
+          type: string
+          format: uuid
+        term:
+          type: string
+        severity:
+          type: string
+          enum: [MILD, MODERATE, SEVERE]
+        serious:
+          type: boolean
+        onset_date:
+          type: string
+          format: date
+        causality:
+          type: string
+    LabResult:
+      type: object
+      required: [lab_result_id, subject_id, study_id, test_name, value]
+      properties:
+        lab_result_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        visit_id:
+          type: string
+          format: uuid
+        test_name:
+          type: string
+        test_code:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        reference_range_low:
+          type: number
+        reference_range_high:
+          type: number
+        normal_flag:
+          type: string
+          enum: [NORMAL, LOW, HIGH, ABNORMAL]
+        collected_date:
+          type: string
+          format: date-time
+    Medication:
+      type: object
+      required: [medication_id, subject_id, study_id, drug_name]
+      properties:
+        medication_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        drug_name:
+          type: string
+        atc_code:
+          type: string
+        dose:
+          type: string
+        dose_unit:
+          type: string
+        route:
+          type: string
+        frequency:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        indication:
+          type: string
+    MedicationCreate:
+      type: object
+      required: [subject_id, drug_name, dose, dose_unit]
+      properties:
+        subject_id:
+          type: string
+          format: uuid
+        drug_name:
+          type: string
+        atc_code:
+          type: string
+        dose:
+          type: string
+        dose_unit:
+          type: string
+        route:
+          type: string
+        frequency:
+          type: string
+        start_date:
+          type: string
+          format: date
+    Query:
+      type: object
+      required: [query_id, subject_id, study_id, status, question]
+      properties:
+        query_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        crf_page:
+          type: string
+        status:
+          type: string
+          enum: [OPEN, ANSWERED, CLOSED, CANCELLED]
+        question:
+          type: string
+        answer:
+          type: string
+        raised_by:
+          type: string
+        raised_date:
+          type: string
+          format: date-time
+        resolved_date:
+          type: string
+          format: date-time
+    Visit:
+      type: object
+      required: [visit_id, subject_id, study_id, visit_name]
+      properties:
+        visit_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        study_id:
+          type: string
+          format: uuid
+        visit_name:
+          type: string
+        visit_number:
+          type: integer
+        scheduled_date:
+          type: string
+          format: date
+        actual_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [SCHEDULED, IN_PROGRESS, COMPLETED, MISSED, CANCELLED]
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
