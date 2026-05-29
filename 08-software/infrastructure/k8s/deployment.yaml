@@ -1,0 +1,194 @@
+# CDOS Kubernetes Deployment
+# Implements: TR-050 (Container Orchestration), 04-technical-design/deployment-design.md
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cdos
+  labels:
+    app.kubernetes.io/part-of: cdos
+---
+# ConfigMap for application settings
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cdos-config
+  namespace: cdos
+data:
+  CDOS_APP_NAME: "CDOS"
+  CDOS_LOG_LEVEL: "INFO"
+  CDOS_KAFKA_TOPIC_PREFIX: "cdos"
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cdos-secrets
+  namespace: cdos
+type: Opaque
+stringData:
+  CDOS_DATABASE_URL: "postgresql+asyncpg://cdos:CHANGEME@cdos-rds:5432/cdos"
+  CDOS_JWT_SECRET_KEY: "CHANGE-ME-IN-PRODUCTION"
+  CDOS_EDC_API_KEY: ""
+  CDOS_LIMS_API_KEY: ""
+  CDOS_SAFETY_API_KEY: ""
+---
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdos-api-gateway
+  namespace: cdos
+  labels:
+    app: cdos-api-gateway
+    app.kubernetes.io/name: cdos-api-gateway
+    app.kubernetes.io/part-of: cdos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cdos-api-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: cdos-api-gateway
+    spec:
+      serviceAccountName: cdos-sa
+      containers:
+        - name: api-gateway
+          image: cdos/api-gateway:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: cdos-config
+            - secretRef:
+                name: cdos-secrets
+          env:
+            - name: CDOS_KAFKA_BOOTSTRAP_SERVERS
+              value: "cdos-msk:9094"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 30
+            periodSeconds: 10
+      terminationGracePeriodSeconds: 30
+---
+# Service for API Gateway
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdos-api-gateway
+  namespace: cdos
+  labels:
+    app: cdos-api-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: cdos-api-gateway
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cdos-api-gateway-hpa
+  namespace: cdos
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cdos-api-gateway
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cdos-api-gateway-pdb
+  namespace: cdos
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: cdos-api-gateway
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cdos-sa
+  namespace: cdos
+  labels:
+    app.kubernetes.io/part-of: cdos
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cdos-ingress
+  namespace: cdos
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:REGION:ACCOUNT:certificate/CERT-ID"
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+spec:
+  rules:
+    - host: api.cdos.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cdos-api-gateway
+                port:
+                  number: 80
