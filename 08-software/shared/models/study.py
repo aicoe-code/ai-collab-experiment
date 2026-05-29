@@ -14,14 +14,19 @@ from pydantic import BaseModel, Field
 
 
 class StudyStatus(str, Enum):
-    """Lifecycle states for a clinical study."""
+    """Lifecycle states for a clinical study.
+
+    Aligned with: OpenAPI StudyStatus, study.json status enum.
+    """
 
     DRAFT = "draft"
+    ACTIVE = "active"
     ACTIVATION_PENDING = "activation_pending"
     ENROLLING = "enrolling"
     ENROLLMENT_COMPLETE = "enrollment_complete"
     TREATMENT = "treatment"
     FOLLOW_UP = "follow_up"
+    SUSPENDED = "suspended"
     LOCKED = "locked"
     COMPLETED = "completed"
     TERMINATED = "terminated"
@@ -53,6 +58,9 @@ class Study(BaseModel):
     sponsor_id: UUID = Field(..., description="Sponsor organization identifier")
     indication: str = Field(
         ..., min_length=1, max_length=300, description="Therapeutic indication"
+    )
+    therapeutic_area: str | None = Field(
+        default=None, max_length=200, description="Therapeutic area (e.g., Oncology)"
     )
     target_enrollment: int = Field(
         ..., ge=0, description="Planned number of subjects"

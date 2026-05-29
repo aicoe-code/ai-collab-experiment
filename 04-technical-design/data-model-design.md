@@ -213,7 +213,7 @@ This document defines the canonical data model for CDOS. The model serves as the
 
 | Attribute | Type | Constraint | Description | SDTM Mapping |
 |-----------|------|------------|-------------|--------------|
-| adverse_event_id | UUID | PK, NOT NULL | Unique AE identifier | AESEQ |
+|| ae_id | UUID | PK, NOT NULL | Unique AE identifier | AESEQ |
 | subject_id | UUID | FK → Subject, NOT NULL | Affected subject | USUBJID |
 | visit_id | UUID | FK → Visit | Visit when reported | VISITNUM |
 | term | VARCHAR(200) | NOT NULL | Reported AE term | AETERM |

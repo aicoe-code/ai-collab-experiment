@@ -1,6 +1,6 @@
 """Subject entity model — canonical representation of a study participant.
 
-Implements: FR-015 (Subject Enrollment)
+Implements: FR-006 (Subject Screening), FR-007 (Subject Enrollment)
 Aligns with: subject.json schema, 05-data-models/canonical/
 """
 
@@ -14,10 +14,16 @@ from pydantic import BaseModel, Field
 
 
 class SubjectStatus(str, Enum):
-    """Lifecycle states for a study subject."""
+    """Lifecycle states for a study subject.
+
+    Aligned with: OpenAPI SubjectStatus, subject.json status enum.
+    Includes SCREENED as alias for backward compatibility with tests.
+    """
 
     SCREENING = "screening"
+    SCREENED = "screened"
     ENROLLED = "enrolled"
+    RANDOMIZED = "randomized"
     ON_TREATMENT = "on_treatment"
     COMPLETED = "completed"
     DISCONTINUED = "discontinued"

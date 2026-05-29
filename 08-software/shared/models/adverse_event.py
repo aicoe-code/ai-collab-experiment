@@ -2,6 +2,7 @@
 
 Implements: FR-020 (Safety Reporting)
 Aligns with: adverse_event.json schema, 05-data-models/canonical/
+Maps to SDTM AE domain.
 """
 
 from __future__ import annotations
@@ -14,7 +15,10 @@ from pydantic import BaseModel, Field
 
 
 class AdverseEventSeverity(str, Enum):
-    """CTCAE severity grades."""
+    """CTCAE severity grades.
+
+    Aligned with: adverse_event.json severity enum, OpenAPI severity enum.
+    """
 
     MILD = "mild"
     MODERATE = "moderate"
@@ -67,6 +71,9 @@ class AdverseEvent(BaseModel):
         default=None,
         max_length=100,
         description="Causality assessment (related, not related, unknown)",
+    )
+    is_sae: bool = Field(
+        default=False, description="Whether event meets SAE criteria"
     )
     is_susar: bool = Field(
         default=False, description="Whether event is a SUSAR"

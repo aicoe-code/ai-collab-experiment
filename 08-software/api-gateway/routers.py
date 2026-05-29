@@ -1,8 +1,9 @@
 """CDOS API Gateway routers — REST endpoint definitions.
 
-Implements: FR-001 (Study Management), FR-015 (Subject Enrollment),
-            FR-020 (Safety Reporting), FR-018 (Lab Data)
-Aligns with: 06-api-specifications/openapi/core-api.yaml
+Implements: FR-001 (Study Management), FR-006 (Subject Screening),
+            FR-007 (Subject Enrollment), FR-020 (Safety Reporting),
+            FR-018 (Lab Data), FR-029 (Data Validation/Queries)
+Aligns with: 06-api-specifications/openapi/cdos-core.yaml
 """
 
 from __future__ import annotations
@@ -80,7 +81,7 @@ async def update_study_status(
 
 
 # ---------------------------------------------------------------------------
-# Subject endpoints (FR-015, FR-016)
+# Subject endpoints (FR-006, FR-007)
 # ---------------------------------------------------------------------------
 @router.get(
     "/studies/{study_id}/subjects",
@@ -199,7 +200,7 @@ async def get_adverse_event(ae_id: UUID) -> AdverseEvent:
 
 
 # ---------------------------------------------------------------------------
-# Lab Result endpoints (FR-018)
+# Lab Result endpoints (FR-017, FR-018)
 # ---------------------------------------------------------------------------
 @router.get(
     "/studies/{study_id}/subjects/{subject_id}/lab-results",
@@ -218,7 +219,7 @@ async def list_lab_results(
 
 
 # ---------------------------------------------------------------------------
-# Query endpoints (FR-022)
+# Query endpoints (FR-012, FR-029)
 # ---------------------------------------------------------------------------
 @router.get(
     "/studies/{study_id}/queries",

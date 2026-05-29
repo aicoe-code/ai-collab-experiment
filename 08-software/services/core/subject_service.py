@@ -1,7 +1,8 @@
 """Subject Service — core business logic for subject enrollment and management.
 
-Implements: FR-015 (Subject Enrollment), FR-016 (Subject Discontinuation)
-Aligns with: 06-api-specifications/openapi/core-api.yaml
+Implements: FR-006 (Subject Screening), FR-007 (Subject Enrollment),
+            FR-008 (Subject Withdrawal)
+Aligns with: 06-api-specifications/openapi/cdos-core.yaml
 """
 
 from __future__ import annotations
@@ -38,7 +39,7 @@ class SubjectService:
     ) -> Subject:
         """Screen a new subject for a study.
 
-        Implements: FR-015, TC-042
+        Implements: FR-006, TC-008
 
         Args:
             study_id: Parent study UUID.
@@ -71,7 +72,7 @@ class SubjectService:
     async def enroll_subject(self, subject_id: UUID) -> Subject:
         """Enroll a screened subject into the study.
 
-        Implements: FR-015, TC-042
+        Implements: FR-007, TC-010
 
         Args:
             subject_id: Subject UUID.
@@ -107,7 +108,7 @@ class SubjectService:
     ) -> Subject:
         """Discontinue a subject from the study.
 
-        Implements: FR-016
+        Implements: FR-008, TC-011
 
         Args:
             subject_id: Subject UUID.

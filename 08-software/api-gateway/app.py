@@ -1,7 +1,7 @@
 """CDOS API Gateway — FastAPI application entry point.
 
-Implements: FR-001 through FR-030 (REST API endpoints)
-Aligns with: 06-api-specifications/openapi/core-api.yaml
+Implements: FR-001 through FR-035 (REST API endpoints)
+Aligns with: 06-api-specifications/openapi/cdos-core.yaml
 Provides health check, router includes, and middleware.
 """
 
@@ -70,7 +70,7 @@ app = create_app()
 async def health_check() -> dict[str, str]:
     """Liveness probe — returns 200 if the process is alive.
 
-    Implements: TR-010 (Observability)
+    Implements: TR-012 (Platform Uptime SLA)
     """
     return {
         "status": "healthy",
