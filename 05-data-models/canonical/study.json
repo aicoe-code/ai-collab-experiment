@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/study.json",
+  "title": "Study",
+  "description": "A clinical trial. Maps to SDTM domain DM (Demographics) and TS (Trial Summary).",
+  "type": "object",
+  "required": ["study_id", "study_name", "protocol_number", "status", "phase", "created_at"],
+  "properties": {
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the study."
+    },
+    "study_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Official name of the clinical trial."
+    },
+    "protocol_number": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Protocol identification number."
+    },
+    "short_title": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Brief study title for display."
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["Phase I", "Phase II", "Phase III", "Phase IV"],
+      "description": "Clinical trial phase. CDISC TS parameter: PHASE."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "ACTIVE", "ENROLLING", "SUSPENDED", "COMPLETED", "TERMINATED"],
+      "description": "Current study status."
+    },
+    "sponsor_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifier of the sponsoring organization."
+    },
+    "therapeutic_area": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Disease or therapeutic area (e.g., Oncology, Cardiology)."
+    },
+    "indication": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Specific disease indication being studied."
+    },
+    "study_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of first subject first visit. CDISC DM variable: RFPENDTC."
+    },
+    "study_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Planned or actual study completion date."
+    },
+    "protocol_version": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Current protocol version identifier."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}

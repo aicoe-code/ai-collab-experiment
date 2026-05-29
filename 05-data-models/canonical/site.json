@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/site.json",
+  "title": "Site",
+  "description": "A clinical investigation site. Maps to SDTM domain DM (Demographics) site-related variables.",
+  "type": "object",
+  "required": ["site_id", "site_number", "site_name", "country", "status"],
+  "properties": {
+    "site_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the site."
+    },
+    "site_number": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "description": "Site identification number. CDISC DM variable: SITEID."
+    },
+    "site_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Name of the clinical site or institution."
+    },
+    "investigator_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the principal Investigator."
+    },
+    "address_line1": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Site street address."
+    },
+    "address_line2": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Additional address information."
+    },
+    "city": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "City."
+    },
+    "state_province": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "State or province."
+    },
+    "postal_code": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Postal or ZIP code."
+    },
+    "country": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 3,
+      "description": "ISO 3166-1 alpha-2 or alpha-3 country code. CDISC DM variable: COUNTRY."
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 30,
+      "description": "Site contact phone number."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Site contact email."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "ACTIVE", "SUSPENDED", "CLOSED"],
+      "description": "Current site activation status."
+    },
+    "activation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the site was activated for enrollment."
+    },
+    "irb_approval_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of IRB/IEC approval."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}

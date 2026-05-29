@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/medication.json",
+  "title": "Medication",
+  "description": "A concomitant or study medication. Maps to SDTM domain CM (Concomitant Medications) or EX (Exposure).",
+  "type": "object",
+  "required": ["med_id", "study_id", "subject_id", "medication_name", "start_date"],
+  "properties": {
+    "med_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the medication record."
+    },
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Study."
+    },
+    "subject_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Subject."
+    },
+    "visit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Visit at which medication was recorded."
+    },
+    "med_sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Sequence number per subject. CDISC CM variable: CMSEQ."
+    },
+    "medication_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Name of the medication. CDISC CM variable: CMTRT."
+    },
+    "who_drug_code": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "WHO Drug Dictionary code."
+    },
+    "medication_type": {
+      "type": "string",
+      "enum": ["CONCOMITANT", "STUDY_DRUG", "PRIOR"],
+      "description": "Type of medication."
+    },
+    "dose": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Dose amount. CDISC CM variable: CMDOSTXT."
+    },
+    "dose_unit": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Dose unit. CDISC CM variable: CMDOSU."
+    },
+    "route": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Route of administration. CDISC CM variable: CMROUTE."
+    },
+    "frequency": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Dosing frequency. CDISC CM variable: CMFREQ."
+    },
+    "indication": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Reason for medication. CDISC CM variable: CMINDC."
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Medication start date. CDISC CM variable: CMSTDTC."
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Medication end date. CDISC CM variable: CMENDTC."
+    },
+    "is_ongoing": {
+      "type": "boolean",
+      "description": "Whether the medication is currently ongoing."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}

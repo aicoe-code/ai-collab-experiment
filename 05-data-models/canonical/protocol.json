@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/protocol.json",
+  "title": "Protocol",
+  "description": "Study protocol metadata. Maps to SDTM domain TS (Trial Summary) and TI (Trial Inclusion/Exclusion Criteria).",
+  "type": "object",
+  "required": ["protocol_id", "study_id", "version", "status"],
+  "properties": {
+    "protocol_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the protocol version."
+    },
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Study."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "description": "Protocol version string (e.g., '1.0', '2.1')."
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this protocol version becomes effective."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "UNDER_REVIEW", "APPROVED", "SUPERSEDED"],
+      "description": "Protocol version status."
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Full protocol title."
+    },
+    "objective_primary": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Primary study objective."
+    },
+    "objective_secondary": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 1000 },
+      "description": "Secondary study objectives."
+    },
+    "study_design": {
+      "type": "string",
+      "enum": ["RANDOMIZED_PARALLEL", "RANDOMIZED_CROSSOVER", "SINGLE_ARM", "OPEN_LABEL", "PLACEBO_CONTROLLED", "OTHER"],
+      "description": "Study design type. CDISC TS parameter: STUDYDES."
+    },
+    "is_blinded": {
+      "type": "boolean",
+      "description": "Whether the study is blinded."
+    },
+    "blinding_procedure": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Description of blinding procedure."
+    },
+    "number_of_arms": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of treatment arms."
+    },
+    "inclusion_criteria": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 500 },
+      "description": "Inclusion criteria list. CDISC TI domain."
+    },
+    "exclusion_criteria": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 500 },
+      "description": "Exclusion criteria list. CDISC TI domain."
+    },
+    "endpoints_primary": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 500 },
+      "description": "Primary efficacy endpoints."
+    },
+    "endpoints_secondary": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 500 },
+      "description": "Secondary efficacy endpoints."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}
