@@ -306,6 +306,6 @@ This document defines quantified success metrics for the Clinical Development Op
 - Cost model ROI calculations: [Cost Model](cost-model.md)
 - Implementation roadmap phases: [Implementation Roadmap](roadmap.md)
 - Data quality risk model: [Module 06: Risk Models](../06-risk-models/data-quality-risk.md)
-- Compliance requirements: [Module 07: Compliance](../07-compliance/21-cfr-part-11.md)
+- Compliance requirements: [Module 07: Compliance](../07-compliance/21-cfr-part11.md)
 - Integration SLAs: [Module 04: Integrations](../04-integrations/api-contracts.md)
 - Architecture observability: [Module 01: Architecture](../01-architecture/technology-stack.md)
