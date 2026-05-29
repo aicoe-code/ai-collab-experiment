@@ -228,7 +228,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [MILD, MODERATE, SEVERE]
+            enum: [mild, moderate, severe, life_threatening, fatal]
         - name: serious
           in: query
           schema:
@@ -281,11 +281,10 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: visit_id
+        - name: visit_name
           in: query
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: List of lab results
@@ -374,7 +373,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [OPEN, ANSWERED, CLOSED, CANCELLED]
+            enum: [open, answered, closed, cancelled, reopened]
       responses:
         '200':
           description: List of queries
@@ -455,13 +454,28 @@ components:
   schemas:
     StudyStatus:
       type: string
-      enum: [DRAFT, ACTIVE, ENROLLING, SUSPENDED, COMPLETED, TERMINATED]
+      enum: [draft, active, activation_pending, enrolling, enrollment_complete, treatment, follow_up, suspended, locked, completed, terminated]
     SubjectStatus:
       type: string
-      enum: [SCREENING, ENROLLED, ON_TREATMENT, FOLLOW_UP, COMPLETED, WITHDRAWN, FAILED_SCREENING]
+      enum: [screening, screened, enrolled, randomized, on_treatment, completed, discontinued, screen_failed, withdrawn]
+    AdverseEventSeverity:
+      type: string
+      enum: [mild, moderate, severe, life_threatening, fatal]
+    AdverseEventSeriousness:
+      type: string
+      enum: [serious, non_serious]
+    QueryStatus:
+      type: string
+      enum: [open, answered, closed, cancelled, reopened]
+    QueryPriority:
+      type: string
+      enum: [low, medium, high, critical]
+    LabResultStatus:
+      type: string
+      enum: [pending, received, verified, query, resolved, rejected]
     Study:
       type: object
-      required: [study_id, protocol_number, title, status]
+      required: [study_id, protocol_number, title, short_title, phase, status, sponsor_id, indication, target_enrollment]
       properties:
         study_id:
           type: string
@@ -471,16 +485,32 @@ components:
           example: "CDOS-2026-001"
         title:
           type: string
+        short_title:
+          type: string
         phase:
           type: string
-          enum: [PHASE_1, PHASE_2, PHASE_3, PHASE_4]
+          pattern: "^(I|II|III|IV|I/II|II/III|NA)$"
         status:
           $ref: '#/components/schemas/StudyStatus'
-        therapeutic_area:
-          type: string
         sponsor_id:
           type: string
           format: uuid
+        indication:
+          type: string
+        therapeutic_area:
+          type: string
+        target_enrollment:
+          type: integer
+          minimum: 0
+        actual_enrollment:
+          type: integer
+          minimum: 0
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
         created_at:
           type: string
           format: date-time
@@ -489,17 +519,27 @@ components:
           format: date-time
     StudyCreate:
       type: object
-      required: [protocol_number, title, phase]
+      required: [protocol_number, title, short_title, phase, sponsor_id, indication, target_enrollment]
       properties:
         protocol_number:
           type: string
         title:
           type: string
+        short_title:
+          type: string
         phase:
           type: string
-          enum: [PHASE_1, PHASE_2, PHASE_3, PHASE_4]
+          pattern: "^(I|II|III|IV|I/II|II/III|NA)$"
+        sponsor_id:
+          type: string
+          format: uuid
+        indication:
+          type: string
         therapeutic_area:
           type: string
+        target_enrollment:
+          type: integer
+          minimum: 0
     StudyUpdate:
       type: object
       properties:
@@ -511,7 +551,7 @@ components:
           type: string
     Subject:
       type: object
-      required: [subject_id, study_id, site_id, status]
+      required: [subject_id, study_id, site_id, subject_number]
       properties:
         subject_id:
           type: string
@@ -526,67 +566,101 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/SubjectStatus'
+        screening_date:
+          type: string
+          format: date
         enrollment_date:
           type: string
           format: date
-        demographics:
-          type: object
-          properties:
-            age:
-              type: integer
-            sex:
-              type: string
-              enum: [M, F, U]
-            race:
-              type: string
-            ethnicity:
-              type: string
+        date_of_birth:
+          type: string
+          format: date
+        sex:
+          type: string
+          pattern: "^(M|F|U)$"
+        ethnicity:
+          type: string
+        race:
+          type: string
+        consent_date:
+          type: string
+          format: date
+        discontinuation_reason:
+          type: string
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
     SubjectCreate:
       type: object
-      required: [site_id]
+      required: [site_id, subject_number]
       properties:
         site_id:
           type: string
           format: uuid
         subject_number:
           type: string
-        demographics:
-          type: object
+        sex:
+          type: string
+          pattern: "^(M|F|U)$"
+        race:
+          type: string
+        ethnicity:
+          type: string
     Site:
       type: object
-      required: [site_id, study_id, site_number, status]
+      required: [site_id, site_number, site_name, country, status]
       properties:
         site_id:
           type: string
           format: uuid
-        study_id:
-          type: string
-          format: uuid
         site_number:
           type: string
-        name:
+        site_name:
           type: string
-        country:
-          type: string
-        status:
-          type: string
-          enum: [PENDING, ACTIVE, SUSPENDED, CLOSED]
         investigator_id:
           type: string
           format: uuid
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+        city:
+          type: string
+        state_province:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, suspended, closed]
+        activation_date:
+          type: string
+          format: date
+        irb_approval_date:
+          type: string
+          format: date
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
     SiteCreate:
       type: object
-      required: [site_number, name, country]
+      required: [site_number, site_name, country]
       properties:
         site_number:
           type: string
-        name:
+        site_name:
           type: string
         country:
           type: string
@@ -595,7 +669,7 @@ components:
           format: uuid
     AdverseEvent:
       type: object
-      required: [ae_id, subject_id, study_id, term, severity]
+      required: [ae_id, subject_id, study_id, site_id, term, severity, onset_date]
       properties:
         ae_id:
           type: string
@@ -606,33 +680,44 @@ components:
         study_id:
           type: string
           format: uuid
+        site_id:
+          type: string
+          format: uuid
         term:
           type: string
         meddra_code:
           type: string
         severity:
-          type: string
-          enum: [MILD, MODERATE, SEVERE]
-        serious:
-          type: boolean
+          $ref: '#/components/schemas/AdverseEventSeverity'
+        seriousness:
+          $ref: '#/components/schemas/AdverseEventSeriousness'
         onset_date:
           type: string
           format: date
         resolution_date:
           type: string
           format: date
-        causality:
-          type: string
-          enum: [RELATED, NOT_RELATED, POSSIBLE, PROBABLE]
         outcome:
           type: string
-          enum: [RECOVERED, RECOVERING, NOT_RECOVERED, FATAL, UNKNOWN]
+        causality:
+          type: string
+        is_sae:
+          type: boolean
+        is_susar:
+          type: boolean
+        reported_to_regulator:
+          type: boolean
+        narrative:
+          type: string
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
     AdverseEventCreate:
       type: object
-      required: [subject_id, term, severity]
+      required: [subject_id, term, severity, onset_date]
       properties:
         subject_id:
           type: string
@@ -640,18 +725,17 @@ components:
         term:
           type: string
         severity:
-          type: string
-          enum: [MILD, MODERATE, SEVERE]
-        serious:
-          type: boolean
+          $ref: '#/components/schemas/AdverseEventSeverity'
         onset_date:
           type: string
           format: date
         causality:
           type: string
+        outcome:
+          type: string
     LabResult:
       type: object
-      required: [lab_result_id, subject_id, study_id, test_name, value]
+      required: [lab_result_id, subject_id, study_id, site_id, visit_name, specimen_type, test_name, test_code, result_value, collection_date]
       properties:
         lab_result_id:
           type: string
@@ -662,25 +746,43 @@ components:
         study_id:
           type: string
           format: uuid
-        visit_id:
+        site_id:
           type: string
           format: uuid
+        visit_name:
+          type: string
+        specimen_type:
+          type: string
         test_name:
           type: string
         test_code:
           type: string
-        value:
-          type: number
+        result_value:
+          type: string
         unit:
           type: string
         reference_range_low:
-          type: number
+          type: string
         reference_range_high:
-          type: number
+          type: string
         normal_flag:
           type: string
-          enum: [NORMAL, LOW, HIGH, ABNORMAL]
-        collected_date:
+          pattern: "^(NORMAL|HIGH|LOW|ABNORMAL|ND)?$"
+        collection_date:
+          type: string
+          format: date
+        collection_time:
+          type: string
+        status:
+          $ref: '#/components/schemas/LabResultStatus'
+        lab_name:
+          type: string
+        comments:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
     Medication:
@@ -740,32 +842,47 @@ components:
           format: date
     Query:
       type: object
-      required: [query_id, subject_id, study_id, status, question]
+      required: [query_id, study_id, subject_id, site_id, crf_page, field_name, query_text, raised_by]
       properties:
         query_id:
-          type: string
-          format: uuid
-        subject_id:
           type: string
           format: uuid
         study_id:
           type: string
           format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        site_id:
+          type: string
+          format: uuid
         crf_page:
           type: string
+        field_name:
+          type: string
+        query_text:
+          type: string
         status:
-          type: string
-          enum: [OPEN, ANSWERED, CLOSED, CANCELLED]
-        question:
-          type: string
-        answer:
-          type: string
+          $ref: '#/components/schemas/QueryStatus'
+        priority:
+          $ref: '#/components/schemas/QueryPriority'
         raised_by:
           type: string
-        raised_date:
+        assigned_to:
+          type: string
+        response:
+          type: string
+        responded_by:
+          type: string
+        responded_at:
           type: string
           format: date-time
-        resolved_date:
+        auto_generated:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
     Visit:
@@ -793,7 +910,7 @@ components:
           format: date
         status:
           type: string
-          enum: [SCHEDULED, IN_PROGRESS, COMPLETED, MISSED, CANCELLED]
+          enum: [scheduled, in_progress, completed, missed, cancelled]
 
   responses:
     BadRequest:

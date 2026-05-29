@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the canonical entity-relationship model for the Clinical Data Orchestration System (CDOS). All entities, attributes, and relationships are defined here with their corresponding CDISC mappings. JSON Schema definitions in `canonical/` are the authoritative source; this document provides the ER view.
+This document defines the canonical entity-relationship model for the Clinical Data Orchestration System (CDOS). The Pydantic models in `08-software/shared/models/` are the authoritative source of truth. This document provides the ER view aligned with those models.
 
 ---
 
@@ -13,22 +13,22 @@ This document defines the canonical entity-relationship model for the Clinical D
 |   Study    |1----N*|  Subject  |N*----1|  Site   |
 +------------+       +-----------+       +---------+
 | study_id   |       | subject_id|       | site_id |
-| study_name |       | study_id  |       | site_num|
+| title      |       | study_id  |       | site_num|
 | protocol # |       | site_id   |       | site_nm|
 | status     |       | status    |       | country |
 | phase      |       | sex       |       | status  |
-+------------+       +-----------+       +---------+
-      |1                  |1                  |1
-      |                   |                   |
-      |N                  |N                  |
++------------+       +-----------+---------+------+
+      |1                  |1
+      |                   |
+      |N                  |N
 +------------+       +-----------+       +----------+
-|  Protocol  |       |   Visit   |       |Inves-    |
-+------------+       +-----------+       |tigator   |
-| protocol_id|       | visit_id  |       +----------+
-| study_id   |       | study_id  |       |inv_id    |
-| version    |       | subj_id   |       |site_id   |
-| status     |       | visit_name|       |name      |
-| design     |       | status    |       |role      |
+|  Protocol  |       |   Visit   |       |  Query   |
++------------+       +-----------+       +----------+
+| protocol_id|       | visit_id  |       | query_id |
+| study_id   |       | study_id  |       | study_id |
+| version    |       | subj_id   |       | subj_id  |
+| status     |       | visit_name|       | site_id  |
+| design     |       | status    |       | status   |
 +------------+       +-----------+       +----------+
                          |1
               +----------+----------+
@@ -36,13 +36,14 @@ This document defines the canonical entity-relationship model for the Clinical D
         +-----------+ +---------+ +-----------+
         |AdverseEv.| |LabResult| |Medication |
         +-----------+ +---------+ +-----------+
-        | ae_id     | | lab_id  | | med_id    |
-        | study_id  | | study_id| | study_id  |
-        | subj_id   | | subj_id | | subj_id   |
-        | visit_id  | | visit_id| | visit_id  |
-        | term      | |test_name| |med_name   |
-        | severity  | | result  | | dose      |
-        +-----------+ +---------+ +-----------+
+        | ae_id     | | lab_res.| | med_id    |
+        | study_id  | | _id     | | study_id  |
+        | subj_id   | | study_id| | subj_id   |
+        | site_id   | | subj_id | | visit_id  |
+        | term      | | site_id | |med_name   |
+        | severity  | | result_ | | dose      |
+        +-----------+ | value   | +-----------+
+                      +---------+
 ```
 
 ---
@@ -54,17 +55,18 @@ This document defines the canonical entity-relationship model for the Clinical D
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
 | study_id | UUID | PK, NOT NULL | DM: STUDYID (mapped) | Unique study identifier |
-| study_name | VARCHAR(200) | NOT NULL | TS: TITLE | Official study name |
 | protocol_number | VARCHAR(50) | NOT NULL, UNIQUE | TS: PROTOCOL | Protocol identification number |
-| short_title | VARCHAR(100) | | TS: BRIEF TITLE | Brief study title |
-| phase | VARCHAR(20) | NOT NULL | TS: PHASE | Study phase (I-IV) |
-| status | VARCHAR(30) | NOT NULL | TS: STATUS | Current study status |
-| sponsor_id | UUID | | TS: SPONSID | Sponsoring organization |
-| therapeutic_area | VARCHAR(100) | | | Disease/therapeutic area |
-| indication | VARCHAR(200) | | TS: INDIC | Specific disease indication |
-| study_start_date | DATE | | TS: SSTDTC | First subject first visit |
-| study_end_date | DATE | | TS: SENDTC | Planned/actual completion |
-| protocol_version | VARCHAR(20) | | | Current protocol version |
+| title | VARCHAR(500) | NOT NULL | TS: TITLE | Full study title |
+| short_title | VARCHAR(200) | NOT NULL | TS: BRIEF TITLE | Abbreviated study title |
+| phase | VARCHAR(20) | NOT NULL, pattern | TS: PHASE | Study phase (I-IV, I/II, II/III, NA) |
+| status | VARCHAR(30) | NOT NULL, DEFAULT 'draft' | TS: STATUS | Current study lifecycle status |
+| sponsor_id | UUID | NOT NULL | TS: SPONSID | Sponsoring organization |
+| indication | VARCHAR(300) | NOT NULL | TS: INDIC | Specific disease indication |
+| therapeutic_area | VARCHAR(200) | | | Disease/therapeutic area |
+| target_enrollment | INTEGER | NOT NULL, >=0 | | Planned number of subjects |
+| actual_enrollment | INTEGER | DEFAULT 0, >=0 | | Current enrolled subject count |
+| start_date | DATE | | TS: SSTDTC | Study start date |
+| end_date | DATE | | TS: SENDTC | Study end date |
 | created_at | TIMESTAMP | NOT NULL | | Record creation time |
 | updated_at | TIMESTAMP | NOT NULL | | Record last update time |
 
@@ -73,25 +75,23 @@ This document defines the canonical entity-relationship model for the Clinical D
 
 ---
 
-### 2. Subject (subj)
+### 2. Subject (subject)
 
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
 | subject_id | UUID | PK, NOT NULL | DM: USUBJID (mapped) | Unique subject identifier |
 | study_id | UUID | FK→Study, NOT NULL | DM: STUDYID | Parent study |
 | site_id | UUID | FK→Site, NOT NULL | DM: SITEID (mapped) | Enrollment site |
-| subject_number | VARCHAR(20) | | DM: SUBJID | Site-specific subject number |
-| screening_number | VARCHAR(20) | | | Screening ID |
-| status | VARCHAR(30) | NOT NULL | DM: ARM (derived) | Enrollment status |
-| enrollment_date | DATE | | DM: RFICDTC | Informed consent date |
-| date_of_birth | DATE | | DM: BRTHDTC | Date of birth |
-| sex | VARCHAR(1) | | DM: SEX | Biological sex (M/F/U) |
-| race | VARCHAR(100) | | DM: RACE | Race |
+| subject_number | VARCHAR(20) | NOT NULL | DM: SUBJID | Subject number within study |
+| status | VARCHAR(30) | NOT NULL, DEFAULT 'screening' | DM: ARM (derived) | Current subject status |
+| screening_date | DATE | | | Date of screening visit |
+| enrollment_date | DATE | | DM: RFICDTC | Date of formal enrollment |
+| date_of_birth | DATE | | DM: BRTHDTC | Subject date of birth |
+| sex | VARCHAR(1) | pattern (M/F/U) | DM: SEX | Biological sex |
 | ethnicity | VARCHAR(100) | | DM: ETHNIC | Ethnicity |
-| treatment_arm | VARCHAR(50) | | DM: ARMCD | Assigned treatment arm |
-| randomization_date | DATE | | | Date of randomization |
-| withdrawal_date | DATE | | | Date of withdrawal |
-| withdrawal_reason | VARCHAR(200) | | | Withdrawal reason |
+| race | VARCHAR(100) | | DM: RACE | Race |
+| consent_date | DATE | | | Date informed consent was signed |
+| discontinuation_reason | VARCHAR(500) | | | Reason for discontinuation |
 | created_at | TIMESTAMP | NOT NULL | | Record creation time |
 | updated_at | TIMESTAMP | NOT NULL | | Record last update time |
 
@@ -151,29 +151,26 @@ This document defines the canonical entity-relationship model for the Clinical D
 
 ---
 
-### 5. AdverseEvent (ae)
+### 5. AdverseEvent (adverse_event)
 
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
 | ae_id | UUID | PK, NOT NULL | AE: AEID (mapped) | Unique AE identifier |
-| study_id | UUID | FK→Study, NOT NULL | AE: STUDYID | Parent study |
 | subject_id | UUID | FK→Subject, NOT NULL | AE: USUBJID | Parent subject |
-| visit_id | UUID | FK→Visit | | Associated visit |
-| ae_sequence | INTEGER | ≥1 | AE: AESEQ | Sequence number per subject |
-| term | VARCHAR(200) | NOT NULL | AE: AETERM | Verbatim AE term |
-| meddra_code | VARCHAR(20) | | AE: AEDECOD | MedDRA code |
-| meddra_llt | VARCHAR(100) | | | MedDRA LLT |
-| meddra_pt | VARCHAR(100) | | AE: AEDECOD | MedDRA Preferred Term |
-| meddra_soc | VARCHAR(100) | | AE: AEBODSYS | MedDRA SOC |
-| severity | VARCHAR(20) | NOT NULL | AE: AESEV | Severity grade |
-| seriousness | VARCHAR(20) | | AE: AESER | SAE indicator |
-| causality | VARCHAR(30) | | AE: AEREL | Relationship to study drug |
-| outcome | VARCHAR(20) | | AE: AEOUT | AE outcome |
-| action_taken | VARCHAR(30) | | AE: AEACN | Action taken with study drug |
-| start_date | DATE | NOT NULL | AE: AESTDTC | Onset date |
-| end_date | DATE | | AE: AEENDTC | Resolution date |
-| is_ongoing | BOOLEAN | | | Ongoing indicator |
-| reported_by | VARCHAR(100) | | | Reporter |
+| study_id | UUID | FK→Study, NOT NULL | AE: STUDYID | Parent study |
+| site_id | UUID | FK→Site, NOT NULL | | Site where event was reported |
+| term | VARCHAR(200) | NOT NULL | AE: AETERM | Reported adverse event term |
+| meddra_code | VARCHAR(20) | | AE: AEDECOD | MedDRA preferred term code |
+| severity | VARCHAR(20) | NOT NULL | AE: AESEV | CTCAE severity grade |
+| seriousness | VARCHAR(20) | DEFAULT 'non_serious' | AE: AESER | ICH seriousness classification |
+| onset_date | DATE | NOT NULL | AE: AESTDTC | Date of AE onset |
+| resolution_date | DATE | | AE: AEENDTC | Date of AE resolution |
+| outcome | VARCHAR(100) | | AE: AEOUT | Outcome |
+| causality | VARCHAR(100) | | AE: AEREL | Causality assessment |
+| is_sae | BOOLEAN | DEFAULT false | | Whether event meets SAE criteria |
+| is_susar | BOOLEAN | DEFAULT false | | Whether event is a SUSAR |
+| reported_to_regulator | BOOLEAN | DEFAULT false | | Whether reported to regulatory authority |
+| narrative | VARCHAR(5000) | | | Event narrative |
 | created_at | TIMESTAMP | NOT NULL | | Record creation time |
 | updated_at | TIMESTAMP | NOT NULL | | Record last update time |
 
@@ -182,26 +179,28 @@ This document defines the canonical entity-relationship model for the Clinical D
 
 ---
 
-### 6. LabResult (lab)
+### 6. LabResult (lab_result)
 
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
-| lab_id | UUID | PK, NOT NULL | LB: LBID (mapped) | Unique lab result identifier |
-| study_id | UUID | FK→Study, NOT NULL | LB: STUDYID | Parent study |
-| subject_id | UUID | FK→Subject, NOT NULL | LB: USUBJID | Parent subject |
-| visit_id | UUID | FK→Visit, NOT NULL | LB: VISITNUM (mapped) | Visit |
-| lab_sequence | INTEGER | ≥1 | LB: LBSEQ | Sequence number |
-| test_name | VARCHAR(100) | NOT NULL | LB: LBTEST | Test name |
-| test_code | VARCHAR(20) | NOT NULL | LB: LBTESTCD | Test code |
-| category | VARCHAR(20) | | LB: LBCAT | Test category |
-| result | VARCHAR(200) | NOT NULL | LB: LBORRES | Result value |
-| result_numeric | DECIMAL | | LB: LBSTRESN | Standardized numeric result |
-| unit | VARCHAR(20) | | LB: LBORRESU | Unit of measurement |
-| reference_range_low | DECIMAL | | LB: LBSTNRLO | Normal range lower limit |
-| reference_range_high | DECIMAL | | LB: LBSTNRHI | Normal range upper limit |
-| normal_flag | VARCHAR(20) | | LB: LBNRIND | Normal/abnormal flag |
-| specimen_type | VARCHAR(50) | | LB: LBSPEC | Specimen type |
-| collection_date | DATE | | LB: LBDTC | Collection date |
+| lab_result_id | UUID | PK, NOT NULL | LB: LBID (mapped) | Unique lab result identifier |
+| subject_id | UUID | FK→Subject, NOT NULL | LB: USUBJID | Reference to Subject |
+| study_id | UUID | FK→Study, NOT NULL | LB: STUDYID | Reference to parent Study |
+| site_id | UUID | FK→Site, NOT NULL | LB: SITEID | Collection site identifier |
+| visit_name | VARCHAR(50) | NOT NULL | LB: VISITNUM (mapped) | Study visit when sample was collected |
+| specimen_type | VARCHAR(100) | NOT NULL | LB: LBSPEC | Type of specimen |
+| test_name | VARCHAR(200) | NOT NULL | LB: LBTEST | Laboratory test name |
+| test_code | VARCHAR(50) | NOT NULL | LB: LBTESTCD | Laboratory test code |
+| result_value | VARCHAR(100) | NOT NULL | LB: LBORRES | Result value (numeric or text) |
+| unit | VARCHAR(50) | | LB: LBORRESU | Unit of measurement |
+| reference_range_low | VARCHAR(50) | | LB: LBSTNRLO | Lower limit of normal range |
+| reference_range_high | VARCHAR(50) | | LB: LBSTNRHI | Upper limit of normal range |
+| normal_flag | VARCHAR(20) | pattern | LB: LBNRIND | Normal range flag |
+| collection_date | DATE | NOT NULL | LB: LBDTC | Date specimen was collected |
+| collection_time | VARCHAR(20) | | | Time specimen was collected |
+| status | VARCHAR(20) | NOT NULL, DEFAULT 'pending' | | Result verification status |
+| lab_name | VARCHAR(200) | | | Performing laboratory name |
+| comments | VARCHAR(1000) | | | Result comments |
 | created_at | TIMESTAMP | NOT NULL | | Record creation time |
 | updated_at | TIMESTAMP | NOT NULL | | Record last update time |
 
@@ -210,7 +209,34 @@ This document defines the canonical entity-relationship model for the Clinical D
 
 ---
 
-### 7. Medication (med)
+### 7. Query (query)
+
+| Attribute | Type | Constraint | CDISC Mapping | Description |
+|-----------|------|------------|---------------|-------------|
+| query_id | UUID | PK, NOT NULL | | Unique query identifier |
+| study_id | UUID | FK→Study, NOT NULL | | Reference to parent Study |
+| subject_id | UUID | FK→Subject, NOT NULL | | Reference to Subject |
+| site_id | UUID | FK→Site, NOT NULL | | Site associated with the query |
+| crf_page | VARCHAR(100) | NOT NULL | | CRF page or form identifier |
+| field_name | VARCHAR(200) | NOT NULL | | Data field triggering the query |
+| query_text | VARCHAR(2000) | NOT NULL | | Query description |
+| status | VARCHAR(20) | NOT NULL, DEFAULT 'open' | | Current query status |
+| priority | VARCHAR(20) | NOT NULL, DEFAULT 'medium' | | Query priority |
+| raised_by | VARCHAR(200) | NOT NULL | | Person or system that raised the query |
+| assigned_to | VARCHAR(200) | | | Person assigned to resolve |
+| response | VARCHAR(2000) | | | Response to the query |
+| responded_by | VARCHAR(200) | | | Person who responded |
+| responded_at | TIMESTAMP | | | Timestamp of response |
+| auto_generated | BOOLEAN | DEFAULT false | | Whether query was auto-generated |
+| created_at | TIMESTAMP | NOT NULL | | Record creation time |
+| updated_at | TIMESTAMP | NOT NULL | | Record last update time |
+
+**Domain:** Data Management — Query/DCR
+**Role:** Data Quality
+
+---
+
+### 8. Medication (medication)
 
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
@@ -238,7 +264,7 @@ This document defines the canonical entity-relationship model for the Clinical D
 
 ---
 
-### 8. Protocol (proto)
+### 9. Protocol (protocol)
 
 | Attribute | Type | Constraint | CDISC Mapping | Description |
 |-----------|------|------------|---------------|-------------|
@@ -275,12 +301,13 @@ This document defines the canonical entity-relationship model for the Clinical D
 | Study | Protocol | 1:N | protocol.study_id | Protocol versions for study |
 | Site | Subject | 1:N | subject.site_id | Subjects at a site |
 | Subject | Visit | 1:N | visit.subject_id | Subject's scheduled visits |
-| Subject | AdverseEvent | 1:N | ae.subject_id | Subject's adverse events |
-| Subject | LabResult | 1:N | lab.subject_id | Subject's lab results |
-| Subject | Medication | 1:N | med.subject_id | Subject's medications |
-| Visit | AdverseEvent | 1:N | ae.visit_id | AEs reported at visit |
-| Visit | LabResult | 1:N | lab.visit_id | Labs collected at visit |
-| Visit | Medication | 1:N | med.visit_id | Medications at visit |
+| Subject | AdverseEvent | 1:N | adverse_event.subject_id | Subject's adverse events |
+| Subject | LabResult | 1:N | lab_result.subject_id | Subject's lab results |
+| Subject | Query | 1:N | query.subject_id | Subject's data queries |
+| Subject | Medication | 1:N | medication.subject_id | Subject's medications |
+| Visit | AdverseEvent | 1:N | adverse_event.visit_id | AEs reported at visit |
+| Visit | LabResult | 1:N | lab_result.visit_id | Labs collected at visit |
+| Visit | Medication | 1:N | medication.visit_id | Medications at visit |
 
 ---
 

@@ -4,102 +4,85 @@
   "title": "AdverseEvent",
   "description": "An adverse event. Maps to SDTM domain AE (Adverse Events).",
   "type": "object",
-  "required": ["ae_id", "study_id", "subject_id", "term", "start_date", "severity"],
+  "required": ["ae_id", "subject_id", "study_id", "site_id", "term", "severity", "onset_date"],
   "properties": {
     "ae_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Unique identifier for the adverse event."
-    },
-    "study_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Foreign key to the Study."
+      "description": "Unique adverse event identifier."
     },
     "subject_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Foreign key to the Subject."
+      "description": "Reference to affected Subject."
     },
-    "visit_id": {
+    "study_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Foreign key to the Visit at which AE was reported."
+      "description": "Reference to parent Study."
     },
-    "ae_sequence": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Sequence number for the AE per subject. CDISC AE variable: AESEQ."
+    "site_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Site where event was reported."
     },
     "term": {
       "type": "string",
       "minLength": 1,
       "maxLength": 200,
-      "description": "Verbatim adverse event term. CDISC AE variable: AETERM."
+      "description": "Reported adverse event term."
     },
     "meddra_code": {
       "type": "string",
       "maxLength": 20,
-      "description": "MedDRA code for the AE. CDISC AE variable: AEDECOD (PT code)."
-    },
-    "meddra_llt": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "MedDRA Lowest Level Term."
-    },
-    "meddra_pt": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "MedDRA Preferred Term."
-    },
-    "meddra_soc": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "MedDRA System Organ Class. CDISC AE variable: AEBODSYS."
+      "description": "MedDRA preferred term code."
     },
     "severity": {
       "type": "string",
-      "enum": ["MILD", "MODERATE", "SEVERE"],
-      "description": "AE severity grade. CDISC AE variable: AESEV."
+      "enum": ["mild", "moderate", "severe", "life_threatening", "fatal"],
+      "description": "CTCAE severity grade."
     },
     "seriousness": {
       "type": "string",
-      "enum": ["NOT_SERIOUS", "SERIOUS"],
-      "description": "Whether the AE meets SAE criteria. CDISC AE variable: AESER."
+      "enum": ["serious", "non_serious"],
+      "description": "ICH seriousness classification."
     },
-    "causality": {
+    "onset_date": {
       "type": "string",
-      "enum": ["RELATED", "NOT_RELATED", "POSSIBLY_RELATED", "PROBABLY_RELATED", "DEFINITELY_RELATED"],
-      "description": "Relationship to study drug. CDISC AE variable: AEREL."
+      "format": "date",
+      "description": "Date of AE onset."
+    },
+    "resolution_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of AE resolution."
     },
     "outcome": {
       "type": "string",
-      "enum": ["RECOVERED", "RECOVERING", "NOT_RECOVERED", "FATAL", "UNKNOWN"],
-      "description": "AE outcome. CDISC AE variable: AEOUT."
+      "maxLength": 100,
+      "description": "Outcome (recovered, recovering, not recovered, fatal, unknown)."
     },
-    "action_taken": {
-      "type": "string",
-      "enum": ["NONE", "DOSE_REDUCED", "DRUG_INTERRUPTED", "DRUG_WITHDRAWN", "DOSE_NOT_CHANGED"],
-      "description": "Action taken with study drug. CDISC AE variable: AEACN."
-    },
-    "start_date": {
-      "type": "string",
-      "format": "date",
-      "description": "AE onset date. CDISC AE variable: AESTDTC."
-    },
-    "end_date": {
-      "type": "string",
-      "format": "date",
-      "description": "AE resolution date. CDISC AE variable: AEENDTC."
-    },
-    "is_ongoing": {
-      "type": "boolean",
-      "description": "Whether the AE is still ongoing at time of report."
-    },
-    "reported_by": {
+    "causality": {
       "type": "string",
       "maxLength": 100,
-      "description": "Person who reported the AE."
+      "description": "Causality assessment (related, not related, unknown)."
+    },
+    "is_sae": {
+      "type": "boolean",
+      "description": "Whether event meets SAE criteria."
+    },
+    "is_susar": {
+      "type": "boolean",
+      "description": "Whether event is a SUSAR."
+    },
+    "reported_to_regulator": {
+      "type": "boolean",
+      "description": "Whether reported to regulatory authority."
+    },
+    "narrative": {
+      "type": "string",
+      "maxLength": 5000,
+      "description": "Event narrative."
     },
     "created_at": {
       "type": "string",
@@ -109,7 +92,7 @@
     "updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Record last update timestamp."
+      "description": "Last update timestamp."
     }
   }
 }

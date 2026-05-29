@@ -4,69 +4,76 @@
   "title": "Study",
   "description": "A clinical trial. Maps to SDTM domain DM (Demographics) and TS (Trial Summary).",
   "type": "object",
-  "required": ["study_id", "study_name", "protocol_number", "status", "phase", "created_at"],
+  "required": ["study_id", "protocol_number", "title", "short_title", "phase", "status", "sponsor_id", "indication", "target_enrollment"],
   "properties": {
     "study_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Unique identifier for the study."
-    },
-    "study_name": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200,
-      "description": "Official name of the clinical trial."
+      "description": "Unique study identifier."
     },
     "protocol_number": {
       "type": "string",
       "minLength": 1,
       "maxLength": 50,
-      "description": "Protocol identification number."
+      "description": "Protocol number."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Full study title."
     },
     "short_title": {
       "type": "string",
-      "maxLength": 100,
-      "description": "Brief study title for display."
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Abbreviated study title."
     },
     "phase": {
       "type": "string",
-      "enum": ["Phase I", "Phase II", "Phase III", "Phase IV"],
-      "description": "Clinical trial phase. CDISC TS parameter: PHASE."
+      "pattern": "^(I|II|III|IV|I/II|II/III|NA)$",
+      "description": "Study phase."
     },
     "status": {
       "type": "string",
-      "enum": ["DRAFT", "ACTIVE", "ENROLLING", "SUSPENDED", "COMPLETED", "TERMINATED"],
-      "description": "Current study status."
+      "enum": ["draft", "active", "activation_pending", "enrolling", "enrollment_complete", "treatment", "follow_up", "suspended", "locked", "completed", "terminated"],
+      "description": "Current study lifecycle status."
     },
     "sponsor_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Identifier of the sponsoring organization."
-    },
-    "therapeutic_area": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "Disease or therapeutic area (e.g., Oncology, Cardiology)."
+      "description": "Sponsor organization identifier."
     },
     "indication": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "Therapeutic indication."
+    },
+    "therapeutic_area": {
+      "type": "string",
       "maxLength": 200,
-      "description": "Specific disease indication being studied."
+      "description": "Therapeutic area (e.g., Oncology)."
     },
-    "study_start_date": {
+    "target_enrollment": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Planned number of subjects."
+    },
+    "actual_enrollment": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current enrolled subject count."
+    },
+    "start_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of first subject first visit. CDISC DM variable: RFPENDTC."
+      "description": "Study start date."
     },
-    "study_end_date": {
+    "end_date": {
       "type": "string",
       "format": "date",
-      "description": "Planned or actual study completion date."
-    },
-    "protocol_version": {
-      "type": "string",
-      "maxLength": 20,
-      "description": "Current protocol version identifier."
+      "description": "Study end date."
     },
     "created_at": {
       "type": "string",
@@ -76,7 +83,7 @@
     "updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Record last update timestamp."
+      "description": "Last update timestamp."
     }
   }
 }
