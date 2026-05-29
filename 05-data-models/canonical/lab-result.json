@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/lab-result.json",
+  "title": "LabResult",
+  "description": "A laboratory test result. Maps to SDTM domain LB (Laboratory Test Results).",
+  "type": "object",
+  "required": ["lab_id", "study_id", "subject_id", "visit_id", "test_name", "test_code", "result"],
+  "properties": {
+    "lab_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the lab result."
+    },
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Study."
+    },
+    "subject_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Subject."
+    },
+    "visit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Visit."
+    },
+    "lab_sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Sequence number for the lab result. CDISC LB variable: LBSEQ."
+    },
+    "test_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Name of the lab test. CDISC LB variable: LBTEST."
+    },
+    "test_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "description": "Lab test code. CDISC LB variable: LBTESTCD."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["HEMATOLOGY", "CHEMISTRY", "URINALYSIS", "IMMUNOLOGY", "VIROLOGY", "OTHER"],
+      "description": "Lab test category. CDISC LB variable: LBCAT."
+    },
+    "result": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Test result value (numeric as string or character result). CDISC LB variable: LBORRES."
+    },
+    "result_numeric": {
+      "type": "number",
+      "description": "Numeric result value when applicable."
+    },
+    "unit": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Unit of measurement. CDISC LB variable: LBORRESU."
+    },
+    "reference_range_low": {
+      "type": "number",
+      "description": "Lower limit of normal reference range. CDISC LB variable: LBSTNRLO."
+    },
+    "reference_range_high": {
+      "type": "number",
+      "description": "Upper limit of normal reference range. CDISC LB variable: LBSTNRHI."
+    },
+    "normal_flag": {
+      "type": "string",
+      "enum": ["NORMAL", "ABNORMAL_LOW", "ABNORMAL_HIGH", "ABNORMAL"],
+      "description": "Normal/abnormal indicator. CDISC LB variable: LBNRIND."
+    },
+    "specimen_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of specimen collected. CDISC LB variable: LBSPEC."
+    },
+    "collection_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date specimen was collected. CDISC LB variable: LBDTC."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}

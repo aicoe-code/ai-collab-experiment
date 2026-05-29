@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdos.io/schemas/subject.json",
+  "title": "Subject",
+  "description": "A participant enrolled in a clinical trial. Maps to SDTM domain DM (Demographics).",
+  "type": "object",
+  "required": ["subject_id", "study_id", "site_id", "status"],
+  "properties": {
+    "subject_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the subject."
+    },
+    "study_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Study entity."
+    },
+    "site_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Foreign key to the Site where the subject is enrolled."
+    },
+    "subject_number": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Site-specific subject identification number. CDISC DM variable: SUBJID."
+    },
+    "screening_number": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Screening identification number."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["SCREENING", "ENROLLED", "RANDOMIZED", "ON_TREATMENT", "COMPLETED", "WITHDRAWN", "SCREEN_FAILED"],
+      "description": "Current subject enrollment status."
+    },
+    "enrollment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of informed consent. CDISC DM variable: RFICDTC."
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Subject date of birth. CDISC DM variable: BRTHDTC."
+    },
+    "sex": {
+      "type": "string",
+      "enum": ["M", "F", "U"],
+      "description": "Biological sex. CDISC DM variable: SEX. Controlled terminology: CDISC CT."
+    },
+    "race": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Subject race. CDISC DM variable: RACE. Controlled terminology: CDISC CT."
+    },
+    "ethnicity": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Subject ethnicity. CDISC DM variable: ETHNIC."
+    },
+    "treatment_arm": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Assigned treatment arm. CDISC DM variable: ARMCD."
+    },
+    "randomization_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of randomization."
+    },
+    "withdrawal_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of withdrawal from study, if applicable."
+    },
+    "withdrawal_reason": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Reason for withdrawal."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record last update timestamp."
+    }
+  }
+}
